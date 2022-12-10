@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { trpc } from '../../utils/trpc';
+import { compress } from '../../utils/lzstring';
 
 const getSrcFromBase64 = (url: string) => `data:image/png;base64, ${url}`;
 
@@ -13,10 +14,10 @@ const Form = () => {
         const reader = new FileReader();
 
         reader.onload = function () {
-            if (reader.result && typeof reader.result === 'string')
-                setBase64Image(reader.result.replace("data:", "")
-                    .replace(/^.+,/, "")
-                );
+            if (reader.result && typeof reader.result === 'string') {
+                const base64Img = reader.result.replace("data:", "").replace(/^.+,/, "");
+                setBase64Image(base64Img);
+            }
         };
         if (customImage) {
             reader.readAsDataURL(customImage);
@@ -31,8 +32,12 @@ const Form = () => {
     const onSubmit = (e) => {
         e.preventDefault();
         if (!customTweet && !base64ImageFormat) return;
-
-        userMutation.mutate({ tweet: customTweet, image64Base: base64ImageFormat });
+        let compressedStr;
+        if (base64ImageFormat) {
+            compressedStr = compress(base64ImageFormat);
+            console.log(compressedStr.length,base64ImageFormat.length);
+        }
+        userMutation.mutate({ tweet: customTweet, image64Base: compressedStr });
     }
     useEffect(() => {
         convertImageToBase64();
@@ -53,7 +58,7 @@ const Form = () => {
                             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                         </div>
-                        <input id="dropzone-file" type="file" className="hidden" onChange={onCustomImageUpload} />
+                        <input id="dropzone-file" type="file" accept=".jpg, .png, .jpeg" className="hidden" onChange={onCustomImageUpload} />
                     </label>
                 </div>
             </div>
