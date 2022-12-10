@@ -37,7 +37,7 @@ const Form = () => {
             compressedStr = compress(base64ImageFormat);
             console.log(compressedStr.length,base64ImageFormat.length);
         }
-        userMutation.mutate({ tweet: customTweet, image64Base: compressedStr });
+        userMutation.mutate({ tweet: customTweet, image64Base: base64ImageFormat });
     }
     useEffect(() => {
         convertImageToBase64();
