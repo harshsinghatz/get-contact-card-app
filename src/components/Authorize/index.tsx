@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
+import { ReactNode } from "react";
 
-const Authorize = ({children}) => {
+const Authorize = ({ children }: { children: ReactNode }) => {
     const { status } = useSession();
 
     if (status === "unauthenticated" || !status) {
