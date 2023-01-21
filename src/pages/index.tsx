@@ -27,7 +27,7 @@ const Home: NextPage = () => {
                 <p className="text-gray-500">Customize your contact card</p>
               </div>
               <div className="w-full md:w-1/2">
-                <img src="https://images.pexels.com/photos/326576/pexels-photo-326576.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" className alt="Hero Image" className="rounded-lg" />
+                <img src="https://images.pexels.com/photos/326576/pexels-photo-326576.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Hero Image" className="rounded-lg" />
               </div>
             </div>
           </div>
