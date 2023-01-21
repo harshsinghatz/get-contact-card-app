@@ -32,7 +32,7 @@ const Form = () => {
         if (!file) return;
         setCustomImage(file);
     }
-    const onSubmit = (e) => {
+    const onSubmit = (e:any) => {
         e.preventDefault();
         if (!customTweet && !base64ImageFormat) return;
         let compressedStr;
