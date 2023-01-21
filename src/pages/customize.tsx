@@ -6,7 +6,7 @@ const Customize = () => {
     return <Authorize>
         <Navbar />
         <Form />
-    </Authorize>;
+    </Authorize >;
 }
 
 export default Customize;

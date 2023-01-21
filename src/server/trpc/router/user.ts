@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { router, protectedProcedure } from "../trpc";
 
 export const userRouter = router({
     updateUser: protectedProcedure.input(z.object({ tweet: z.string().nullish(), image64Base: z.string().nullish() }))
@@ -12,11 +12,23 @@ export const userRouter = router({
                 where: {
                     id: userId,
                 }, data: {
-                    //Type error solve this!
                     tweet: tweet,
                     cardImage: image64Base,
                 }
             })
             return updateUser;
+        }),
+    getUser: protectedProcedure.query(async ({ ctx }) => {
+        const userId = ctx.session?.user?.id;
+        const user = await ctx.prisma.user.findFirst({
+            where: {
+                id: userId
+            },
+            select: {
+                tweet: true,
+                cardImage: true
+            }
         })
+        return user;
+    })
 });

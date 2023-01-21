@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { trpc } from '../../utils/trpc';
 import { compress } from '../../utils/lzstring';
+import ToastContext from "../../context/ToastContext";
 
 const getSrcFromBase64 = (url: string) => `data:image/png;base64, ${url}`;
 
@@ -9,6 +10,8 @@ const Form = () => {
     const [customImage, setCustomImage] = useState<Blob>();
     const [base64ImageFormat, setBase64Image] = useState<string>("");
     const userMutation = trpc.user.updateUser.useMutation();
+    const { addToast } = useContext(ToastContext);
+    const userQuery = trpc.user.getUser.useQuery();
 
     const convertImageToBase64 = () => {
         const reader = new FileReader();
@@ -35,13 +38,60 @@ const Form = () => {
         let compressedStr;
         if (base64ImageFormat) {
             compressedStr = compress(base64ImageFormat);
-            console.log(compressedStr.length,base64ImageFormat.length);
+            console.log(compressedStr.length, base64ImageFormat.length);
         }
         userMutation.mutate({ tweet: customTweet, image64Base: base64ImageFormat });
     }
+
+    const removeImage = () => {
+        setBase64Image('');
+    }
+
     useEffect(() => {
         convertImageToBase64();
     }, [customImage]);
+
+    useEffect(() => {
+        if (userMutation.isError) {
+            addToast({
+                message: 'Something went wrong!',
+                status: "error",
+            });
+        }
+
+        if (userMutation.isSuccess) {
+            addToast({
+                message: 'Sucessfull!',
+                status: "success",
+            });
+        }
+
+        if (userMutation.isLoading) {
+            addToast({
+                message: 'Loading...',
+                status: "loading",
+            });
+        }
+
+        console.log(userMutation);
+    }, [userMutation.isError, userMutation.isSuccess, userMutation.isLoading]);
+
+    useEffect(() => {
+        const { cardImage = "", tweet = "" } = userQuery?.data || {};
+        if (cardImage) {
+            setBase64Image(cardImage);
+        }
+        if (tweet) {
+            setCustomTweet(tweet);
+        }
+
+        if (userQuery.isLoading) {
+            addToast({
+                message: 'Loading...',
+                status: "loading",
+            });
+        }
+    }, [userQuery?.data?.cardImage, userQuery?.data?.tweet, userQuery.isLoading])
 
     return <>
         <form className="m-10 p-2" onSubmit={onSubmit}>
@@ -62,8 +112,16 @@ const Form = () => {
                     </label>
                 </div>
             </div>
-            <div className="flex align-middle justify-center w-100">
-                {base64ImageFormat && <img className="w-11/12 p-10 text-center" src={getSrcFromBase64(base64ImageFormat)} alt='custom-image' />}
+            <div>
+                {base64ImageFormat && <div className="flex flex-col align-middle justify-center w-100">
+                    <button onClick={removeImage} type="button" className="bg-white self-end rounded-md p-2 inline-flex items-center justify-center text-red-400 hover:text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <span className="sr-only">Close menu</span>
+                        <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <img className="w-11/12 p-10 w-90 max-w-4xl self-center" src={getSrcFromBase64(base64ImageFormat)} alt='custom-image' />
+                </div>}
             </div>
             <button type="submit" className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">Submit</button>
         </form>
